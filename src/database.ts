@@ -59,9 +59,19 @@ export async function setupDatabase(): Promise<Database> {
   const count = await dbInstance.get<{ total: number }>('SELECT COUNT(*) as total FROM alimentos');
 
   if (count && count.total === 0) {
-    const caminhoJson = path.resolve(process.cwd(), 'alimentos.json');
+    const possibleFiles = ['unified_tables.json', 'alimentos.json', 'alimentos_unificados.json'];
+    let caminhoJson = '';
 
-    if (fs.existsSync(caminhoJson)) {
+    for (const file of possibleFiles) {
+      const fullPath = path.resolve(process.cwd(), file);
+      if (fs.existsSync(fullPath)) {
+        caminhoJson = fullPath;
+        break;
+      }
+    }
+
+    if (caminhoJson) {
+      console.log(`Carregando dados a partir de ${path.basename(caminhoJson)}...`);
       const rawData = fs.readFileSync(caminhoJson, 'utf-8');
       const alimentos: Alimento[] = JSON.parse(rawData);
 
@@ -79,7 +89,7 @@ export async function setupDatabase(): Promise<Database> {
         await stmt.run(
           item.id,
           item.fonte,
-          String(item.codigo_original),
+          item.codigo_original != null ? String(item.codigo_original) : null,
           item.nome,
           item.nome_ingles ?? null,
           item.categoria,
@@ -96,6 +106,9 @@ export async function setupDatabase(): Promise<Database> {
 
       await stmt.finalize();
       await dbInstance.exec('COMMIT');
+      console.log(`Banco de dados populado com ${alimentos.length} alimentos!`);
+    } else {
+      console.warn('Nenhum arquivo JSON de alimentos encontrado para popular o banco.');
     }
   }
 
