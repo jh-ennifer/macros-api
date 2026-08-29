@@ -181,6 +181,49 @@ app.get('/alimentos/categoria/:categoria', async (req: Request, res: Response) =
 	}
 })
 
+
+// Rota para buscar dados simplificados de um alimento
+app.get('/alimentos/simplificado/:name', async (req: Request, res: Response) => {
+	const {name} = req.params
+	
+	if (!name) {
+		return res.status(400).json({ error: 'Informe um termo para busca' });
+	}
+
+	try {
+		if (!db) {
+		return res.status(503).json({ error: 'Banco de dados ainda não inicializado' });
+		}
+
+		// Busca no nome em português ou no nome em inglês (para a tabela USDA)
+		const alimentos = await db.all(
+		`SELECT fonte, nome, nome_ingles, energia_kcal, energia_kj, proteina_g, lipideos_g, carboidratos_g, fibra_g FROM alimentos 
+		WHERE nome LIKE ? OR (nome_ingles IS NOT NULL AND nome_ingles LIKE ?)`,
+		[`%${name}%`, `%${name}%`]
+		);
+
+		const resultadoFormatado = alimentos.map((item) => ({
+			fonte: item.fonte,
+			nome: item.nome,
+			nome_ingles: item.nome_ingles,
+			macros_principais: {
+				energia_kcal: item.energia_kcal,
+				energia_kj: item.energia_kj,
+				proteina_g: item.proteina_g,
+				lipideos_g: item.lipideos_g,
+				carboidratos_g: item.carboidratos_g, 
+				fibra_g: item.fibra_g
+			}
+		}))
+
+		return res.json(resultadoFormatado)
+		
+	} catch (error) {
+		console.error('Erro ao buscar alimentos:', error);
+    	return res.status(500).json({ error: 'Erro interno no servidor' });
+	}
+})
+
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
