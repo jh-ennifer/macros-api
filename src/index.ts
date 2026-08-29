@@ -98,7 +98,8 @@ app.get('/alimentos/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/alimentos/tabela/:fonte', async (req: Request, res: Response) => {
+//Rota para busca de alimentos por tabela (fonte) (Ex: /alimentos/tabela/TACO)
+app.get('/alimentos/fonte/:fonte', async (req: Request, res: Response) => {
 	const { fonte } = req.params;
 
 	try {
@@ -135,6 +136,48 @@ app.get('/alimentos/tabela/:fonte', async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error('Erro ao buscar alimentos por fonte:', error);
 		return res.status(500).json({ error: 'Erro interno no servidor' });
+	}
+})
+
+// Rota para busca de alimentos por categoria (PT ou EN)
+app.get('/alimentos/categoria/:categoria', async (req: Request, res: Response) => {
+	const {categoria} = req.params
+
+	try{
+		if (!db) {
+			return res.status(503).json({ error: 'Banco de dados ainda não inicializado' });
+		}
+		const alimentos = await db.all(`SELECT * FROM alimentos 
+			WHERE categoria LIKE ? OR (categoria_ingles IS NOT NULL AND categoria_ingles LIKE ?)`, [`%${categoria}%`, `%${categoria}%`]);
+
+		if (alimentos.length === 0) {
+			return res.status(404).json({ error: 'Nenhum alimento encontrado para a categoria especificada' });
+		}
+		
+		const resultadoFormatado = alimentos.map((item) => ({
+			id: item.id,
+			fonte: item.fonte,
+			codigo_original: item.codigo_original,
+			nome: item.nome,
+			nome_ingles: item.nome_ingles,
+			categoria: item.categoria,
+			categoria_ingles: item.categoria_ingles,
+			macros_principais: {
+				energia_kcal: item.energia_kcal,
+				energia_kj: item.energia_kj,
+				proteina_g: item.proteina_g,
+				lipideos_g: item.lipideos_g,
+				carboidratos_g: item.carboidratos_g,
+				fibra_g: item.fibra_g,
+			},
+			nutrientes_completos: item.nutrientes_completos ? JSON.parse(item.nutrientes_completos) : {},
+		}));
+
+		return res.json(resultadoFormatado);
+
+	}catch(error){
+		console.error("Erro ao buscar alimentos por categoria:", error)
+		return res.status(500).json({error: "Erro interno no servidor"})
 	}
 })
 
