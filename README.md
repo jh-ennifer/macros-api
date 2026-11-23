@@ -32,8 +32,8 @@ Certifique-se de ter o **Node.js** (v18+) e o **npm** instalados na sua máquina
 
 ### 2. Clonar o repositório e acessar a pasta
 ```bash
-git clone <url-do-repositorio>
-cd api-macros
+git clone https://github.com/jh-ennifer/macros-api.git
+cd macros-api
 ```
 
 ### 3. Instalar as dependências
