@@ -159,6 +159,13 @@ GET http://localhost:3000/alimentos/TACO_1
 
 ---
 
+## Base de dados
+
+Os dados pertencem às instituições citadas; consulte as condições de uso de cada base:
+**[TACO](https://www.gov.br/agricultura/pt-br/assuntos/inspecao/produtos-vegetal/legislacao-programas-nacionais-e-seguranca-dos-alimentos-1/legislacao/legislacao-vinhos-e-bebidas/tabela-brasileira-de-composicao-de-alimentos_taco_2011.pdf)**
+**[TBCA](https://www.tbca.net.br/)**
+**[USDA](https://fdc.nal.usda.gov/)**
+
 ## 📄 Licença
 
-Este projeto está licenciado sob a licença **ISC**.
+Este projeto está licenciado sob a licença **MIT**.
